@@ -60,7 +60,10 @@ class ListServer(Server):
 
 class MapServer:
     def __init__(self, products: List[Product]):       #konstruktor ma brac jako argument liste produktow tak jak w ListServer (products: List[Product])
-        pass                                  #i z niej inicjalizowac slownik (kluczem jest nazwa produktu, wartością – obiekt reprezentujący produkt)
+        products_dict = []
+        for product in products:
+            products_dict[product.name] = product
+        self.products_dict=products_dict                                        #i z niej inicjalizowac slownik (kluczem jest nazwa produktu, wartością – obiekt reprezentujący produkt)
 
 
 class Client:
