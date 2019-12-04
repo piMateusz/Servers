@@ -49,7 +49,7 @@ class ListServer(Server):
                 #price_list.append(product.name)
 
 class MapServer:
-    def __init(self, product_dict: Dict[Product.name,Product]):
+    def __init__(self, product_dict: Dict[Product.name,Product]):
         self.product_dict= product_dict
    
 
