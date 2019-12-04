@@ -6,14 +6,17 @@ from abc import ABC, abstractmethod
 import re
 
 class Product:
-    def __init__(self, name: str, price: int):
+    def __init__(self, name: str, price: float):
         self.name = name
         self.price = price
 
-    # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą argumenty wyrażające
-    #  nazwę produktu (typu str) i jego cenę (typu float) -- w takiej kolejności --
-    #  i ustawiającą atrybuty `name` (typu str) oraz `price` (typu float)
+    # TO_DO
 
+    def __hash__(self):
+        return hash((self.name, self.price))
+
+    def __eq__(self, other):
+        return self.name == other.name and self.price == other.price
 
 class TooManyProductsFoundError:
     # Reprezentuje wyjątek związany ze znalezieniem zbyt dużej liczby produktów.
@@ -21,34 +24,29 @@ class TooManyProductsFoundError:
 
 
 class Server(ABC):
+
     @abstractmethod
     def search_products(self, name_length: int = 1)-> List[float]:
         pass
-    @abstractmethod
-    def add_product(self, product: Product):
-        pass
 
-# FIXME: Każada z poniższych klas serwerów powinna posiadać:
-#  (1) metodę inicjalizacyjną przyjmującą listę obiektów typu `Product` i ustawiającą atrybut `products`
-#  zgodnie z typem reprezentacji produktów na danym serwerze,
-#  (2) możliwość odwołania się do atrybutu klasowego `n_max_returned_entries` (typu int)
-#  wyrażający maksymalną dopuszczalną liczbę wyników wyszukiwania, (3) możliwość odwołania się do metody
+#   (3) możliwość odwołania się do metody
 #  `get_entries(self, n_letters)` zwracającą listę produktów spełniających kryterium wyszukiwania
 
 
 class ListServer(Server):
-    def __init__(self, product_list: List[Product]):
-        self.product_list = product_list
 
-    def search_products(self, name_length: int = 1) -> List[float]:
+    n_max_returned_entries: int = 3
+
+    def __init__(self, products: List[Product]):
+        self.products = products
+
+    def get_entries(self, n_letters: int = 1) -> List[float]:
         price_list: List[float] = []
         for product in self.product_list:
 
-            if re.match(len(product.name), name_length):
-
+            if re.match(len(product.name), n_letters):
+                pass
                 #price_list.append(product.name)
-    def add_product(self, product: Product):
-        self.product_list.append(product)
 
 class MapServer:
     pass
