@@ -68,6 +68,7 @@ class MapServer:
 
 class Client:
     # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą obiekt reprezentujący serwer
- 
+    def __init__(self, serwer:Server):
+        self.serwer = serwer
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
         raise NotImplementedError()
