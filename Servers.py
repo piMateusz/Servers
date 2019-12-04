@@ -25,8 +25,13 @@ class TooManyProductsFoundError:
 
 class Server(ABC):
 
+    def get_entries(self, n_letters: int = 1)-> List[float]:
+        price_list: List[float] = filtrate(n_letters)
+
+        # TO DO - sort returned list
+
     @abstractmethod
-    def search_products(self, name_length: int = 1)-> List[float]:
+    def filtrate(self, n_letters: int = 1):
         pass
 
 #   (3) możliwość odwołania się do metody
@@ -40,13 +45,15 @@ class ListServer(Server):
     def __init__(self, products: List[Product]):
         self.products = products
 
-    def get_entries(self, n_letters: int = 1) -> List[float]:
+    def filtrate(self, n_letters: int = 1):
         price_list: List[float] = []
-        for product in self.product_list:
+        for product_index in range(len(self.products)):
+            if product_index == n_max_returned_entries - 1:
+                break
+            if re.match('[a - z]{n}[0-9]{2-3}', self.products[product_index].name):
+                price_list.append(product.name)
 
-            if re.match(len(product.name), n_letters):
-                pass
-                #price_list.append(product.name)
+        return price_list
 
 class MapServer:
     def __init__(self, product_dict: Dict[Product.name,Product]):
@@ -56,8 +63,6 @@ class MapServer:
 
 class Client:
     # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą obiekt reprezentujący serwer
-    def __init__(self, Client:Server):
-        self.Client=Client
-        
+ 
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
         raise NotImplementedError()
