@@ -49,11 +49,13 @@ class ListServer(Server):
                 #price_list.append(product.name)
 
 class MapServer:
-    pass
+    def __init(self, product_dict: Dict[Product.name,Product]):
+        self.product_dict= product_dict
+   
 
 
 class Client:
     # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą obiekt reprezentujący serwer
-
+ 
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
         raise NotImplementedError()
