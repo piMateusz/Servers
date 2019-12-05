@@ -58,7 +58,7 @@ class ListServer(Server):
         return price_list
 
 
-class MapServer:
+class MapServer(Server):
     def __init__(self, products: List[Product]):       #konstruktor ma brac jako argument liste produktow tak jak w ListServer (products: List[Product])
         products_dict = {}
         for product in products:
