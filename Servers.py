@@ -63,7 +63,17 @@ class MapServer(Server):
         products_dict = {}
         for product in products:
             products_dict[product.name] = product
-        self.products = products_dict                                        #i z niej inicjalizowac slownik (kluczem jest nazwa produktu, wartością – obiekt reprezentujący produkt)
+        self.products = products_dict                                        #i z niej inicjalizowac slownik (kluczem jest nazwa produktu, wartością – obiekt reprezentujący produkt
+    def filtrate(self, n_letters: int = 1):
+        price_list: List[float]=[]
+        names=self.products.keys()
+        prod=self.products.values()
+        for product_index in range(len(names)):
+            if product_index == n_max_returned_entries -1:
+                return None
+            if re.match(pattern, names[product_index]):
+                price_list.append(prod[product_index])
+        return price_list
 
 
 class Client:
@@ -71,4 +81,14 @@ class Client:
     def __init__(self, serwer:Server):
         self.client = serwer
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
-        raise NotImplementedError()
+        try:
+            price_list=self.client.get_entries(n_letters)
+            if price_list is None:
+                raise ValueError()
+            else:
+                price_all_products = 0
+                for i in price_list:
+                    price_all_products = price_all_products + i.price
+                return price_all_products
+        except ValueError():
+            print("Zero products in server !")
