@@ -17,13 +17,27 @@ class Product:
     def __eq__(self, other):
         return self.name == other.name and self.price == other.price
 
-class TooManyProductsFoundError:
-    # Reprezentuje wyjątek związany ze znalezieniem zbyt dużej liczby produktów.
-    pass
+class ServerExceptions(Exception):
+    """Class for server's errors"""
+    def __init__(self, msg = None):
+        if msg is None:
+            msg = "Server error occured"
+        super().__init__(msg)
 
-class NoProductFoundError:
-    # Reprezentuje wyjątek związany z brakiem szukanego produktu.
-    pass
+class TooManyProductsFoundError(ServerExceptions):
+    """Reprezentuje wyjątek związany ze znalezieniem zbyt dużej liczby produktów."""
+    def __init__(self, msg = None):
+        if msg is None:
+            msg = "Too many products found"
+        super().__init__(msg)
+
+
+class NoProductFoundError(ServerExceptions):
+    """Reprezentuje wyjątek związany z brakiem szukanego produktu."""
+    def __init__(self, msg = None):
+        if msg is None:
+            msg = "Product matching your expectations does not exist"
+        super().__init__(msg)
 
 class Server(ABC):
     @abstractmethod
@@ -32,15 +46,14 @@ class Server(ABC):
 
     def get_entries(self, n_letters: int = 1) -> List[Product]:
         pattern: str = '[a - z]{' + n_letters + '}[0-9]{2-3}'
-        try:
-            price_list: List[float] = self.filtrate(pattern)
-            if price_list is None:      # None if too many products
-                raise TooManyProductsFoundError      # TO DO: replace it with appropriate error
-            if not price_list:
-                raise NoProductFoundError
-            else:
-                price_list = sorted(price_list, key=chujwieco) #dokoncze to
-                return price_list       # TO DO - sort returned list here
+        price_list: List[float] = self.filtrate(pattern)
+        if price_list is None:      # None if too many products
+            raise TooManyProductsFoundError
+        if not price_list:
+            raise NoProductFoundError
+        else:
+            price_list = sorted(price_list, key=self.price)
+            return price_list
 
 
 class ListServer(Server):
@@ -53,7 +66,7 @@ class ListServer(Server):
     def filtrate(self, pattern: str):
         price_list: List[Product] = []
         for product_index in range(len(self.products)):
-            if len(price_list) > n_max_returned_entries:
+            if len(price_list) > self.n_max_returned_entries:
                 return None
             if re.match(pattern, self.products[product_index].name):
                 price_list.append(self.products[product_index])
@@ -62,34 +75,35 @@ class ListServer(Server):
 
 
 class MapServer(Server):
+
     n_max_returned_entries: int = 3
+
     def __init__(self, products: List[Product]):
-        products_dict = {}
+        products_dict: Dict[str, Product] = {}
         for product in products:
             products_dict[product.name] = product
         self.products = products_dict
-    def filtrate(self, n_letters: int = 1):
-        price_list: List[float]=[]
-        names=self.products.keys()
-        prod=self.products.values()
-        for product_index in range(len(names)):
-            if product_index == n_max_returned_entries -1:
+
+    def filtrate(self,  pattern: str):
+        price_list: List[Product] = []
+        for product_name in self.products:
+            if len(price_list) > self.n_max_returned_entries:
                 return None
-            if re.match(pattern, names[product_index]):
-                price_list.append(prod[product_index])
+            if re.match(pattern, product_name):
+                price_list.append(self.products[product_name])
         return price_list
 
 
 class Client:
-    # FIXME: klasa powinna posiadać metodę inicjalizacyjną przyjmującą obiekt reprezentujący serwer
-    def __init__(self, serwer:Server):
-        self.client = serwer
+    def __init__(self, server: Server):
+        self.server = server
+
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
         try:
-            price_list=self.client.get_entries(n_letters)
-            price_all_products = 0
-            for i in price_list:
-                price_all_products = price_all_products + i.price
+            price_list: Optional[float] = self.server.get_entries(n_letters)
+            price_all_products: int = 0
+            for product in price_list:
+                price_all_products += product.price
             return price_all_products
 
         except TooManyProductsFoundError:
@@ -97,8 +111,3 @@ class Client:
 
         except NoProductFoundError:
             return None
-
-
-
-#zwraca albo łączną cenę produktów, albo None w przypadku, gdy serwer rzucił wyjątek
-# lub gdy nie znaleziono ani jednego produktu spełniającego kryterium).
