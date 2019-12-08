@@ -21,23 +21,26 @@ class TooManyProductsFoundError:
     # Reprezentuje wyjątek związany ze znalezieniem zbyt dużej liczby produktów.
     pass
 
+class NoProductFoundError:
+    # Reprezentuje wyjątek związany z brakiem szukanego produktu.
+    pass
 
 class Server(ABC):
-
-    def get_entries(self, n_letters: int = 1) -> List[float]:
-        pattern = '[a - z]{n}[0-9]{2-3}'
-        try:
-            price_list: List[float] = filtrate(pattern)
-            if price_list is None:      # None if too many products
-                raise ValueError()      # TO DO: replace it with appropriate error
-            else:
-                return price_list       # TO DO - sort returned list here
-        except ValueError():
-            print("Too many products in server !")
-
     @abstractmethod
     def filtrate(self, n_letters: int = 1):
         raise NotImplementedError()
+
+    def get_entries(self, n_letters: int = 1) -> List[Product]:
+        pattern: str = '[a - z]{' + n_letters + '}[0-9]{2-3}'
+        try:
+            price_list: List[float] = self.filtrate(pattern)
+            if price_list is None:      # None if too many products
+                raise TooManyProductsFoundError      # TO DO: replace it with appropriate error
+            if not price_list:
+                raise NoProductFoundError
+            else:
+                price_list = sorted(price_list, key=chujwieco) #dokoncze to
+                return price_list       # TO DO - sort returned list here
 
 
 class ListServer(Server):
@@ -48,23 +51,23 @@ class ListServer(Server):
         self.products = products
 
     def filtrate(self, pattern: str):
-        price_list: List[float] = []
+        price_list: List[Product] = []
         for product_index in range(len(self.products)):
-            if product_index == n_max_returned_entries - 1:
+            if len(price_list) > n_max_returned_entries:
                 return None
             if re.match(pattern, self.products[product_index].name):
-                price_list.append(product.name)
+                price_list.append(self.products[product_index])
 
         return price_list
 
 
 class MapServer(Server):
     n_max_returned_entries: int = 3
-    def __init__(self, products: List[Product]):       #konstruktor ma brac jako argument liste produktow tak jak w ListServer (products: List[Product])
+    def __init__(self, products: List[Product]):
         products_dict = {}
         for product in products:
             products_dict[product.name] = product
-        self.products = products_dict                                        #i z niej inicjalizowac slownik (kluczem jest nazwa produktu, wartością – obiekt reprezentujący produkt
+        self.products = products_dict
     def filtrate(self, n_letters: int = 1):
         price_list: List[float]=[]
         names=self.products.keys()
@@ -84,12 +87,18 @@ class Client:
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
         try:
             price_list=self.client.get_entries(n_letters)
-            if price_list is None:
-                raise ValueError()
-            else:
-                price_all_products = 0
-                for i in price_list:
-                    price_all_products = price_all_products + i.price
-                return price_all_products
-        except ValueError():
-            print("Zero products in server !")
+            price_all_products = 0
+            for i in price_list:
+                price_all_products = price_all_products + i.price
+            return price_all_products
+
+        except TooManyProductsFoundError:
+            return None
+
+        except NoProductFoundError:
+            return None
+
+
+
+#zwraca albo łączną cenę produktów, albo None w przypadku, gdy serwer rzucił wyjątek
+# lub gdy nie znaleziono ani jednego produktu spełniającego kryterium).
