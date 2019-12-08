@@ -65,10 +65,10 @@ class ListServer(Server):
     def filtrate(self, pattern: str):
         price_list: List[Product] = []
         for product_index in range(len(self.products)):
-            if len(price_list) > self.n_max_returned_entries:
-                return None
             if re.match(pattern, self.products[product_index].name):
                 price_list.append(self.products[product_index])
+            if len(price_list) > self.n_max_returned_entries:
+                return None
         return price_list
 
 
@@ -85,10 +85,10 @@ class MapServer(Server):
     def filtrate(self,  pattern: str):
         price_list: List[Product] = []
         for product_name in self.products:
-            if len(price_list) > self.n_max_returned_entries:
-                return None
             if re.match(pattern, product_name):
                 price_list.append(self.products[product_name])
+            if len(price_list) > self.n_max_returned_entries:
+                return None
         return price_list
 
 
@@ -102,13 +102,14 @@ class Client:
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
         try:
             price_list: Optional[float] = self.server.get_entries(n_letters)
-            price_all_products: int = 0
+            price_all_products: float = 0
             for product in price_list:
                 price_all_products += product.price
-            return price_all_products
 
         except TooManyProductsFoundError:
             return None
 
         except NoProductFoundError:
             return None
+
+        return price_all_products
