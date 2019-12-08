@@ -1,0 +1,52 @@
+@startuml
+Server <|-- ListServer
+Server <|-- MapServer
+ListServer *-- Product
+MapServer *-- Product
+Server o-- Client
+server_exceptions <|-- TooManyProductsFoundError
+server_exceptions <|-- NoProductFoundError
+Exception <|-- server_exceptions
+Server ..> TooManyProductsFoundError : << throws >>
+Server ..> NoProductFoundError : << throws >>
+class Product{
++Product(name: string, price: float)
++name: string
++price: float
++__hash__()
++__eq__()
+}
+
+abstract class Server{
++{abstract} filtrate(pattern: str)
++get_entries(n_letters: int = 1): List[Product]
+}
+
+class ListServer{
++{static} n_max_returned_entries: int = 3
++product_list: List[Product]
++ListServer(products: List[Product])
++{abstract} filtrate(pattern: str)
+}
+
+class MapServer{
++{static} n_max_returned_entries: int = 3
++products: Dict[str, Product]
++{abstract} filtrate(pattern: str)
++MapServer(products: List[Product])
+}
+
+class Client{
++server: ServerType
++Client(server: ServerType)
++get_total_price(n_letters: Optional[int]): Optional[float]
+}
+class Exception
+
+class server_exceptions
+
+class TooManyProductsFoundError
+
+class NoProductFoundError
+hide empty members
+@enduml

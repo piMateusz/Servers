@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, TypeVar
 from abc import ABC, abstractmethod
 import re
 
@@ -92,8 +92,11 @@ class MapServer(Server):
         return price_list
 
 
+ServerType = TypeVar('ServerType', bound=Server)
+
+
 class Client:
-    def __init__(self, server: Server):
+    def __init__(self, server: ServerType):
         self.server = server
 
     def get_total_price(self, n_letters: Optional[int]) -> Optional[float]:
