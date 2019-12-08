@@ -41,20 +41,19 @@ class NoProductFoundError(ServerExceptions):
 
 class Server(ABC):
     @abstractmethod
-    def filtrate(self, n_letters: int = 1):
+    def filtrate(self, pattern: str):
         raise NotImplementedError()
 
     def get_entries(self, n_letters: int = 1) -> List[Product]:
-        pattern: str = '[a - z]{' + n_letters + '}[0-9]{2-3}'
-        price_list: List[float] = self.filtrate(pattern)
+        pattern: str = r'^[a-zA-Z]{' + str(n_letters) + r'}\d{2,3}$'
+        price_list: List[Product] = self.filtrate(pattern)
         if price_list is None:      # None if too many products
             raise TooManyProductsFoundError
         if not price_list:
             raise NoProductFoundError
         else:
-            price_list = sorted(price_list, key=self.price)
+            price_list = sorted(price_list, key=lambda product: product.price)
             return price_list
-
 
 class ListServer(Server):
 
@@ -70,7 +69,6 @@ class ListServer(Server):
                 return None
             if re.match(pattern, self.products[product_index].name):
                 price_list.append(self.products[product_index])
-
         return price_list
 
 
